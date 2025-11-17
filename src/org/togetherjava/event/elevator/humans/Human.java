@@ -90,9 +90,12 @@ public final class Human implements ElevatorListener {
         if (startingFloor == destinationFloor || (destinationFloor == elevatorPanel.getCurrentFloor() && this.currentEnteredElevatorId != null && this.currentEnteredElevatorId == elevatorPanel.getId())) {
             this.currentEnteredElevatorId = null;
             this.currentState = State.ARRIVED;
+            if (startingFloor != destinationFloor){
+                elevatorPanel.requestDestinationFloor(destinationFloor);
+            }
             return;
         }
-        if (startingFloor == elevatorPanel.getCurrentFloor()) {
+        if (startingFloor == elevatorPanel.getCurrentFloor() && getCurrentState() != State.TRAVELING_WITH_ELEVATOR) {
             this.currentState = State.TRAVELING_WITH_ELEVATOR;
             this.currentEnteredElevatorId = elevatorPanel.getId();
             elevatorPanel.requestDestinationFloor(destinationFloor);

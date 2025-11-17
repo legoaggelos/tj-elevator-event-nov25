@@ -136,12 +136,12 @@ public final class Simulation {
 
         System.out.println("Median time spend per state:");
         for (Human.State state : Human.State.values()) {
-            int averagePercentage = getAverageTimePercentageSpendForState(state);
-            System.out.printf("\t%s: %d%%%n", state, averagePercentage);
+            double averagePercentage = getAverageTimePercentageSpendForState(state);
+            System.out.printf("\t%s: %f%%%n", state, averagePercentage);
         }
     }
 
-    public int getAverageTimePercentageSpendForState(Human.State state) {
+    public double getAverageTimePercentageSpendForState(Human.State state) {
         LongStream sortedSteps = humanStatistics.stream()
                 .mapToLong(stats -> stats.stepsForState(state))
                 .sorted();
@@ -149,7 +149,7 @@ public final class Simulation {
                 ? (long) sortedSteps.skip(humanStatistics.size() / 2 - 1).limit(2).average().orElseThrow()
                 : sortedSteps.skip(humanStatistics.size() / 2).findFirst().orElseThrow();
 
-        long medianPercentage = 100 * medianSteps / stepCount;
-        return (int) medianPercentage;
+        double medianPercentage = (double) (100 * medianSteps) / stepCount;
+        return (double) medianPercentage;
     }
 }
