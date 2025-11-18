@@ -91,7 +91,7 @@ public final class Simulation {
     }
 
     public void start() {
-        elevatorSystem.ready();
+        elevatorSystem.ready(humans.stream().map(Human::getStartingFloor).toList());
     }
 
     public void step() {

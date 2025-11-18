@@ -67,14 +67,8 @@ public final class Human implements ElevatorListener {
         }
         this.currentState = State.WAITING_FOR_ELEVATOR;
         if (destinationFloor == startingFloor) {
-            return;
+            this.currentState = State.ARRIVED;
         }
-        Elevator bestElevator = floorPanelSystem.bestElevator(destinationFloor, destinationFloor > startingFloor ? TravelDirection.UP : TravelDirection.DOWN);
-        if(bestElevator.getCurrentFloor() == startingFloor) {
-            this.currentEnteredElevatorId = bestElevator.getId();
-            this.currentState = State.TRAVELING_WITH_ELEVATOR;
-        }
-        floorPanelSystem.requestElevator(bestElevator,startingFloor);
     }
 
     @Override
@@ -87,20 +81,15 @@ public final class Human implements ElevatorListener {
         if (getCurrentState() == State.ARRIVED) {
             return;
         }
-        if (startingFloor == destinationFloor || (destinationFloor == elevatorPanel.getCurrentFloor() && this.currentEnteredElevatorId != null && this.currentEnteredElevatorId == elevatorPanel.getId())) {
-            this.currentEnteredElevatorId = null;
-            this.currentState = State.ARRIVED;
-            if (startingFloor != destinationFloor){
-                elevatorPanel.requestDestinationFloor(destinationFloor);
-            }
+        if (getCurrentState() == State.WAITING_FOR_ELEVATOR && elevatorPanel.getCurrentFloor() == startingFloor && elevatorPanel.shouldJoin(this)) {
+            this.currentEnteredElevatorId = elevatorPanel.getId();
+            this.currentState = State.TRAVELING_WITH_ELEVATOR;
             return;
         }
-        if (startingFloor == elevatorPanel.getCurrentFloor() && getCurrentState() != State.TRAVELING_WITH_ELEVATOR) {
-            this.currentState = State.TRAVELING_WITH_ELEVATOR;
-            this.currentEnteredElevatorId = elevatorPanel.getId();
-            elevatorPanel.requestDestinationFloor(destinationFloor);
+        if (getCurrentState() == State.TRAVELING_WITH_ELEVATOR && this.currentEnteredElevatorId != null && this.currentEnteredElevatorId == elevatorPanel.getId() && destinationFloor == elevatorPanel.getCurrentFloor()) {
+            this.currentState = State.ARRIVED;
+            this.currentEnteredElevatorId = null;
         }
-
     }
 
     public OptionalInt getCurrentEnteredElevatorId() {

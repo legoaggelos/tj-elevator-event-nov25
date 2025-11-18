@@ -1,5 +1,7 @@
 package org.togetherjava.event.elevator.elevators;
 
+import org.togetherjava.event.elevator.humans.Human;
+
 /**
  * The system inside an elevator which provides information about the elevator and can be
  * used to request a destination floor.
@@ -25,4 +27,5 @@ public interface ElevatorPanel {
      * @param destinationFloor the desired destination, must be within the range served by this elevator
      */
     void requestDestinationFloor(int destinationFloor);
+    boolean shouldJoin(Human human);
 }
