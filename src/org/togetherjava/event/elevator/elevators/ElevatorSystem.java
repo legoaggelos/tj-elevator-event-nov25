@@ -42,7 +42,7 @@ public final class ElevatorSystem implements FloorPanelSystem {
             return bestElevator;
         }
         for (var elevator : elevators) {
-            if (floorAndElevatorDistance(atFloor, elevator) > floorAndElevatorDistance(atFloor, bestElevator)) {
+            if (elevator.getFloorRequests().size() < bestElevator.getFloorRequests().size()) {
                 bestElevator = elevator;
             }
         }

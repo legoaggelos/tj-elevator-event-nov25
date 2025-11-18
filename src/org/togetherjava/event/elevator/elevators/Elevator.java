@@ -16,6 +16,7 @@ public final class Elevator implements ElevatorPanel {
     private final int minFloor;
     private final int floorsServed;
     private int currentFloor;
+    private boolean shouldGoUp;
 
     private final List<Integer> floorRequests = new ArrayList<>();
 
@@ -38,7 +39,7 @@ public final class Elevator implements ElevatorPanel {
         if (currentFloor < minFloor || currentFloor >= minFloor + floorsServed) {
             throw new IllegalArgumentException("The current floor must be between the floors served by the elevator.");
         }
-
+        this.shouldGoUp = currentFloor < minFloor + floorsServed - 1;
         this.id = NEXT_ID.getAndIncrement();
         this.minFloor = minFloor;
         this.currentFloor = currentFloor;
@@ -99,20 +100,15 @@ public final class Elevator implements ElevatorPanel {
         //  meaning that the average time waiting (either in corridor or inside the elevator)
         //  is minimized across all humans.
         //  It is essential that this method updates the currentFloor field accordingly.
-        if (floorRequests.isEmpty()) {
-            return; //stand still
+        if (currentFloor == minFloor) {
+            shouldGoUp = true;
+        } else if (currentFloor == minFloor + floorsServed - 1) {
+            shouldGoUp = false;
         }
-
-        //if we the target is up, we go up, if it is down, we go down
-        if (currentFloor < floorRequests.getFirst()) { //first come, first served, for now...
+        if (shouldGoUp) {
             incrementFloorByOne();
-        } else if (currentFloor > floorRequests.getFirst()) {
+        } else {
             decrementFloorByOne();
-        }
-
-        //if we have arrived at our floor, or we already are there, we remove the request
-        if (currentFloor == floorRequests.getFirst()) {
-            floorRequests.removeFirst();
         }
     }
 
