@@ -76,7 +76,14 @@ public final class Simulation {
         humanStatistics = this.humans.stream().map(HumanStatistics::new).toList();
         view = new View(this);
     }
-
+    /*
+     * Smart initial direction is enabled by default in the elevator system.
+     * disabling this sometimes slightly improves arrived % in simulations, by around 0.5%, but increase steps by around 10%, so it is not used.
+     * Do not recommend using this, but the option is there.
+     */
+    public void setSmartInitialDirection(boolean useSmartInitialDirection) {
+        this.elevatorSystem.setUseSmartInitialDirection(useSmartInitialDirection);
+    }
     public void startAndExecuteUntilDone(int stepLimit) {
         start();
 
@@ -91,7 +98,7 @@ public final class Simulation {
     }
 
     public void start() {
-        elevatorSystem.ready(humans.stream().map(Human::getStartingFloor).toList());
+        elevatorSystem.ready();
     }
 
     public void step() {

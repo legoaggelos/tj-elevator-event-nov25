@@ -10,18 +10,15 @@ import java.util.List;
  * <p>
  * Once all elevators and humans have been registered via {@link #registerElevator(Elevator)}
  * and {@link #registerElevatorListener(ElevatorListener)} respectively,
- * the system can be made ready using {@link #ready(List)}.
+ * the system can be made ready using {@link #ready()}.
  */
 public final class ElevatorSystem implements FloorPanelSystem {
+    private boolean smartInitialDirection = true;
+
     private final List<Elevator> elevators = new ArrayList<>();
     private final List<ElevatorListener> elevatorListeners = new ArrayList<>();
-    private boolean isFirstElev = false;
 
     public void registerElevator(Elevator elevator) {
-        if (!isFirstElev) {
-            isFirstElev = true;
-            elevators.forEach(elevator1 -> elevator1.setSoleElevator(false));
-        }
         elevators.add(elevator);
     }
 
@@ -29,71 +26,51 @@ public final class ElevatorSystem implements FloorPanelSystem {
         elevatorListeners.add(listener);
     }
 
-    public int distanceFromBottom(Elevator elevator) {
-        return Math.abs(elevator.getCurrentFloor()-1);
-    }
 
-    public int distanceFromTop(Elevator elevator) {
-        return Math.abs(elevator.getCurrentFloor()-elevator.getFloorsServed()+elevator.getMinFloor()-1);
+    /*
+     * This works by calculating the amount of people who need to go up and are up compared to the elevator
+     * and the amount of people who need to go down and are down compared to the elevator
+     * Then, if more people need to go up, it goes up, because it will serve more people that way, resulting in higher arrived%, but more steps.
+     * Same situation if more people wanna go down
+     */
+    public TravelDirection findOptimalDirectionForElevator(Elevator elevator) {
+        int amountOfPeopleGoingUp = 0;
+        int amountOfPeopleGoingDown = 0;
+        int amountOfPeopleOverElev = 0;
+        int amountOfPeopleUnderElev = 0;
+        for (ElevatorListener human : elevatorListeners) {
+            boolean overElev = human.getStartingFloor() > elevator.getCurrentFloor();
+            boolean underElev = human.getStartingFloor() < elevator.getCurrentFloor(); //we have 2 variables because we dont want to consider people who are at the same floor as the elevator. If we did !overElev, people at the same level as it would be considered under it
+            if (overElev && human.getTravelDirection() == TravelDirection.UP) {//over the elevator and going up
+                amountOfPeopleGoingUp++;
+            } else if (underElev && human.getTravelDirection() == TravelDirection.DOWN) { //under the elevator and going down
+                amountOfPeopleGoingDown++;
+            }
+            if (overElev) {
+                amountOfPeopleOverElev++;
+            } else if(underElev) {
+                amountOfPeopleUnderElev++;
+            }
+        }
+        if (amountOfPeopleGoingDown == amountOfPeopleGoingUp) {
+            //if they are equal, we compare amountOfPeopleOver/under. If those are equal too, it doesnt matter and we can return whatever
+            return amountOfPeopleOverElev > amountOfPeopleUnderElev ? TravelDirection.UP : TravelDirection.DOWN;
+        }
+        return amountOfPeopleGoingDown > amountOfPeopleGoingUp ? TravelDirection.DOWN : TravelDirection.UP;
     }
 
     /**
      * Upon calling this, the system is ready to receive elevator requests. Elevators may now start moving.
      */
-    public void ready(List<Integer> startingFloors) {
-        elevatorListeners.forEach(listener -> {
-            listener.onElevatorSystemReady(this);
-        });
+    public void ready() {
+        elevatorListeners.forEach(listener -> listener.onElevatorSystemReady(this));
         for (Elevator elevator : elevators) {
-            for (int startingFloor : startingFloors) {
-                elevator.addStartingFloor(startingFloor);
+            if (smartInitialDirection) {
+                elevator.setState(findOptimalDirectionForElevator(elevator));
+            } else {
+                elevator.setState(TravelDirection.UP);
             }
         }
-        if(elevators.size() == 1) {
-            return;
-        }
-        Elevator upElevator = elevators.getFirst();
-        Elevator secondUpElevator = elevators.get(1);
-        Elevator downElevator = upElevator;
-        for (Elevator elev: elevators) {
-            if (distanceFromTop(elev) < distanceFromTop(upElevator)) {
-                secondUpElevator = upElevator;
-                upElevator = elev;
-            }
-            else if (distanceFromBottom(elev) < distanceFromBottom(downElevator)) {
-                downElevator = elev;
-            }
-        }
-        if (downElevator.equals(upElevator)) {
-            assert downElevator != secondUpElevator;
-            upElevator = secondUpElevator;
-        }
-        upElevator.setSoleElevator(false);
-        upElevator.setRole(Elevator.Role.DOWN_TRAVELLER);
-        downElevator.setSoleElevator(false);
-        downElevator.setRole(Elevator.Role.UP_TRAVELLER);
-    }
-
-    public static int floorAndElevatorDistance(int floor, Elevator elevator) {
-        return Math.abs(elevator.getCurrentFloor()-floor);
-    }
-    @Override
-    public Elevator bestElevator(int atFloor, TravelDirection desiredTravelDirection) {
-        assert !elevators.isEmpty();
-        Elevator bestElevator = elevators.getFirst();
-        if (elevators.size() == 1) {
-            return bestElevator;
-        }
-        for (var elevator : elevators) {
-            if (elevator.getStartingFloors().size() < bestElevator.getStartingFloors().size()) {
-                bestElevator = elevator;
-            }
-        }
-        return bestElevator;
-    }
-
-    public void requestElevator(Elevator elevator, int atFloor) {
-        elevator.requestDestinationFloor(atFloor);
     }
 
     @Override
@@ -104,12 +81,20 @@ public final class ElevatorSystem implements FloorPanelSystem {
         //  The human can then enter the elevator and request their actual destination within the elevator.
         //  Ideally this has to select the best elevator among all which can reduce the time
         //  for the human spending waiting (either in corridor or in the elevator itself).
-        bestElevator(atFloor, desiredTravelDirection).requestDestinationFloor(atFloor);
+        //nothing for paternoster.
     }
 
+    @Override
+    public void setUseSmartInitialDirection(boolean useSmartInitialDirection) {
+        this.smartInitialDirection = useSmartInitialDirection;
+    }
+
+
     public void moveOneFloor() {
+        //these 2 are swapped, because first the people should go where they should, then the elevators should move.
+        //This is to it make so if on step 1 a human is next to an elevator, he goes in, and then all the elevators move.
+        //This makes one sanity test fail, but it has been corrected.
         elevators.forEach(elevator -> elevatorListeners.forEach(listener -> listener.onElevatorArrivedAtFloor(elevator)));
         elevators.forEach(Elevator::moveOneFloor);
-
     }
 }

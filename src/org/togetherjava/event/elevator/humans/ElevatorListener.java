@@ -2,6 +2,7 @@ package org.togetherjava.event.elevator.humans;
 
 import org.togetherjava.event.elevator.elevators.ElevatorPanel;
 import org.togetherjava.event.elevator.elevators.FloorPanelSystem;
+import org.togetherjava.event.elevator.elevators.TravelDirection;
 
 /**
  * Listeners to elevator events. This is mostly interesting for
@@ -25,4 +26,8 @@ public interface ElevatorListener {
      * relevant (i.e. humans that can enter the elevator).
      */
     void onElevatorArrivedAtFloor(ElevatorPanel elevatorPanel);
+
+    int getStartingFloor();
+    TravelDirection getTravelDirection();
+
 }
