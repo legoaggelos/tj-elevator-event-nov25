@@ -62,11 +62,11 @@ public final class Human implements ElevatorListener {
         // TODO Implement. The system is now ready and the human should leave
         //  their initial IDLE state, requesting an elevator by clicking on the buttons of
         //  the floor panel system. The human will now enter the WAITING_FOR_ELEVATOR state.
-        if (getCurrentState() != State.IDLE) {
+        if (getCurrentState() != State.IDLE) { //if the human isnt idle nothing should be done
             return;
         }
         this.currentState = State.WAITING_FOR_ELEVATOR;
-        if (destinationFloor == startingFloor) {
+        if (destinationFloor == startingFloor) { //human is alr at the correct floor? Arrived!
             this.currentState = State.ARRIVED;
         }
     }
@@ -78,14 +78,15 @@ public final class Human implements ElevatorListener {
         //  elevator and request their actual destination floor. The state has to change to TRAVELING_WITH_ELEVATOR.
         //  If the human is currently traveling with this elevator and the event represents
         //  arrival at the human's destination floor, the human can now exit the elevator.
-        if (getCurrentState() == State.ARRIVED) {
+        if (getCurrentState() == State.ARRIVED) { //arrived? do nothing
             return;
         }
-        if (getCurrentState() == State.WAITING_FOR_ELEVATOR && elevatorPanel.getCurrentFloor() == startingFloor) {
+        if (getCurrentState() == State.WAITING_FOR_ELEVATOR && elevatorPanel.getCurrentFloor() == startingFloor) { //elevator in our floor? hop in
             this.currentEnteredElevatorId = elevatorPanel.getId();
             this.currentState = State.TRAVELING_WITH_ELEVATOR;
             return;
         }
+        //elevator reached our floor and we are travelling with it? hop out
         if (getCurrentState() == State.TRAVELING_WITH_ELEVATOR && this.currentEnteredElevatorId != null && this.currentEnteredElevatorId == elevatorPanel.getId() && destinationFloor == elevatorPanel.getCurrentFloor()) {
             this.currentState = State.ARRIVED;
             this.currentEnteredElevatorId = null;

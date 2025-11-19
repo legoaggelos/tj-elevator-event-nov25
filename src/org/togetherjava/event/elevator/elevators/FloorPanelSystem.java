@@ -15,6 +15,4 @@ public interface FloorPanelSystem {
      * requesting that an elevator comes to pick them up for travel into the given direction.
      */
     void requestElevator(int atFloor, TravelDirection desiredTravelDirection);
-    void requestElevator(Elevator bestElevator, int atFloor);
-    Elevator bestElevator(int atFloor, TravelDirection desiredTravelDirection);
 }

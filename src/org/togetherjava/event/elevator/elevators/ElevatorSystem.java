@@ -31,28 +31,6 @@ public final class ElevatorSystem implements FloorPanelSystem {
         elevatorListeners.forEach(listener -> listener.onElevatorSystemReady(this));
     }
 
-    public static int floorAndElevatorDistance(int floor, Elevator elevator) {
-        return Math.abs(elevator.getCurrentFloor()-floor);
-    }
-    @Override
-    public Elevator bestElevator(int atFloor, TravelDirection desiredTravelDirection) {
-        assert !elevators.isEmpty();
-        Elevator bestElevator = elevators.getFirst();
-        if (elevators.size() == 1) {
-            return bestElevator;
-        }
-        for (var elevator : elevators) {
-            if (elevator.getFloorRequests().size() < bestElevator.getFloorRequests().size()) {
-                bestElevator = elevator;
-            }
-        }
-        return bestElevator;
-    }
-
-    public void requestElevator(Elevator elevator, int atFloor) {
-        elevator.requestDestinationFloor(atFloor);
-    }
-
     @Override
     public void requestElevator(int atFloor, TravelDirection desiredTravelDirection) {
         // TODO Implement. This represents a human standing in the corridor,
@@ -61,11 +39,14 @@ public final class ElevatorSystem implements FloorPanelSystem {
         //  The human can then enter the elevator and request their actual destination within the elevator.
         //  Ideally this has to select the best elevator among all which can reduce the time
         //  for the human spending waiting (either in corridor or in the elevator itself).
-        bestElevator(atFloor, desiredTravelDirection).requestDestinationFloor(atFloor);
+        //nothing for paternoster.
     }
 
+
     public void moveOneFloor() {
-        elevators.forEach(Elevator::moveOneFloor);
+        //these 2 are swapped, because first the people should go where they should, then the elevators should move.
+        //This is to it make so if on step 1 a human is next to an elevator, he goes in, and then all the elevators move.
         elevators.forEach(elevator -> elevatorListeners.forEach(listener -> listener.onElevatorArrivedAtFloor(elevator)));
+        elevators.forEach(Elevator::moveOneFloor);
     }
 }

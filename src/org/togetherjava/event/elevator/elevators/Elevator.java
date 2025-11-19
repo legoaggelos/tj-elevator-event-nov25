@@ -18,12 +18,6 @@ public final class Elevator implements ElevatorPanel {
     private int currentFloor;
     private boolean shouldGoUp;
 
-    private final List<Integer> floorRequests = new ArrayList<>();
-
-    public List<Integer> getFloorRequests() {
-        return floorRequests;
-    }
-
     /**
      * Creates a new elevator.
      *
@@ -39,7 +33,7 @@ public final class Elevator implements ElevatorPanel {
         if (currentFloor < minFloor || currentFloor >= minFloor + floorsServed) {
             throw new IllegalArgumentException("The current floor must be between the floors served by the elevator.");
         }
-        this.shouldGoUp = currentFloor < minFloor + floorsServed - 1;
+        this.shouldGoUp = currentFloor > minFloor + floorsServed - 1;
         this.id = NEXT_ID.getAndIncrement();
         this.minFloor = minFloor;
         this.currentFloor = currentFloor;
@@ -70,10 +64,7 @@ public final class Elevator implements ElevatorPanel {
         //  itself requesting this elevator to eventually move to the given floor.
         //  The elevator is supposed to memorize the destination in a way that
         //  it can ensure to eventually reach it.
-        if (floorRequests.contains(destinationFloor)) {
-            return;
-        }
-        floorRequests.add(destinationFloor);
+        //empty for paternoster.
     }
 
     public void incrementFloorByOne() {
@@ -101,9 +92,9 @@ public final class Elevator implements ElevatorPanel {
         //  is minimized across all humans.
         //  It is essential that this method updates the currentFloor field accordingly.
         if (currentFloor == minFloor) {
-            shouldGoUp = true;
+            shouldGoUp = true; //if we are at the bottom, we go up
         } else if (currentFloor == minFloor + floorsServed - 1) {
-            shouldGoUp = false;
+            shouldGoUp = false; //if we are at the top, we need to start going down.
         }
         if (shouldGoUp) {
             incrementFloorByOne();
