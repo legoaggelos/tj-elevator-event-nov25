@@ -34,9 +34,6 @@ public final class Main {
             System.out.println("\tSimulation step " + simulation.getStepCount());
             simulation.step();
             simulation.prettyPrint();
-            if (simulation.getStepCount() == 2000) {
-                System.out.println();
-            }
             if (simulation.getStepCount() >= 100_000) {
                 throw new IllegalStateException("Simulation aborted. All humans should have arrived"
                         + " by now, but they did not. There is likely a bug in your code.");
