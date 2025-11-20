@@ -93,7 +93,7 @@ public final class Human implements ElevatorListener {
     }
 
     @Override
-    public void onElevatorArrivedAtFloor(ElevatorPanel elevatorPanel) {
+    public synchronized void onElevatorArrivedAtFloor(ElevatorPanel elevatorPanel) {
         // TODO Implement. If the human is currently waiting for an elevator and
         //  this event represents arrival at the humans current floor, the human can now enter the
         //  elevator and request their actual destination floor. The state has to change to TRAVELING_WITH_ELEVATOR.
@@ -101,12 +101,12 @@ public final class Human implements ElevatorListener {
         //  arrival at the human's destination floor, the human can now exit the elevator.
         if ( //arrived or on an irrelevant floor? do nothing
                 (this.getDestinationFloor() != elevatorPanel.getCurrentFloor() && this.getStartingFloor() != elevatorPanel.getCurrentFloor())
-                || getCurrentState() == State.ARRIVED
+                || this.getCurrentState() == State.ARRIVED
         ) {
             return;
         }
-        if (getCurrentState() == State.WAITING_FOR_ELEVATOR && elevatorPanel.getCurrentFloor() == startingFloor && currentEnteredElevatorId == null
-                && (getTravelDirection() == elevatorPanel.getTravelDirection() || elevatorPanel.getTopFloor() == elevatorPanel.getCurrentFloor() || elevatorPanel.getCurrentFloor() == elevatorPanel.getMinFloor())
+        if (this.getCurrentState() == State.WAITING_FOR_ELEVATOR && elevatorPanel.getCurrentFloor() == startingFloor && currentEnteredElevatorId == null
+                && (this.getTravelDirection() == elevatorPanel.getTravelDirection() || elevatorPanel.getTopFloor() == elevatorPanel.getCurrentFloor() || elevatorPanel.getCurrentFloor() == elevatorPanel.getMinFloor())
         ) {
             //elevator in our floor and travelling in the same direction? hop in. If they both are at the top or min floor they can join no matter the travel direction, because they have only one option.
             this.currentEnteredElevatorId = elevatorPanel.getId();

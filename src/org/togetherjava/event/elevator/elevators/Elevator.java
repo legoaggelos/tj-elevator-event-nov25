@@ -85,7 +85,7 @@ public final class Elevator implements ElevatorPanel {
     }
 
     public void incrementFloorByOne() {
-        if (currentFloor+1 > minFloor + floorsServed - 1) {
+        if (currentFloor + 1 > minFloor + floorsServed - 1) {
             return;
         }
         currentFloor++;

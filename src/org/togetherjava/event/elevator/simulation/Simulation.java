@@ -179,7 +179,7 @@ public final class Simulation implements HumanArrivedListener {
     }
 
     @Override
-    public void onHumanArrived(Human human) {
+    public synchronized void onHumanArrived(Human human) {
         if (travelingHumanCount > 0) {
             travelingHumanCount--; //we trust that the human doesnt notify us twice.
         }

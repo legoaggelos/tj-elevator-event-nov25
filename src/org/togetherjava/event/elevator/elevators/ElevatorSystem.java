@@ -95,7 +95,7 @@ public final class ElevatorSystem implements FloorPanelSystem {
         //these 2 are swapped, because first the people should go where they should, then the elevators should move.
         //This is to it make so if on step 1 a human is next to an elevator, he goes in, and then all the elevators move.
         //This makes one sanity test fail, but it has been corrected.
-        elevators.forEach(elevator -> elevatorListeners.forEach(listener -> listener.onElevatorArrivedAtFloor(elevator)));
-        elevators.forEach(Elevator::moveOneFloor);
+        elevators.parallelStream().forEach(elevator -> elevatorListeners.parallelStream().forEach(listener -> listener.onElevatorArrivedAtFloor(elevator)));
+        elevators.parallelStream().forEach(Elevator::moveOneFloor);
     }
 }
