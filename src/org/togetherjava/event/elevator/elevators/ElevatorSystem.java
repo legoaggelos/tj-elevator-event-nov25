@@ -1,6 +1,7 @@
 package org.togetherjava.event.elevator.elevators;
 
 import org.togetherjava.event.elevator.humans.ElevatorListener;
+import org.togetherjava.event.elevator.humans.Human;
 
 import java.util.ArrayList;
 import java.util.List;

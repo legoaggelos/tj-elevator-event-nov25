@@ -5,6 +5,8 @@ import org.togetherjava.event.elevator.elevators.ElevatorPanel;
 import org.togetherjava.event.elevator.elevators.FloorPanelSystem;
 import org.togetherjava.event.elevator.elevators.TravelDirection;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.OptionalInt;
 import java.util.StringJoiner;
 
@@ -24,6 +26,7 @@ public final class Human implements ElevatorListener {
      * Otherwise, this is {@code null} to indicate that the human is currently on the corridor.
      */
     private Integer currentEnteredElevatorId;
+    private List<HumanArrivedListener> listeners = new ArrayList<>();
 
     /**
      * Creates a new human.
@@ -43,6 +46,20 @@ public final class Human implements ElevatorListener {
         this.destinationFloor = destinationFloor;
 
         currentState = State.IDLE;
+    }
+
+    public void addListener(HumanArrivedListener listener) {
+        this.listeners.add(listener);
+    }
+
+    private void setArrived() {
+        if (currentState == State.ARRIVED) {
+            return; //dont want to notify listeners again for our arrival
+        }
+        this.currentState = State.ARRIVED;
+        for (var listener : listeners) {
+            listener.onHumanArrived(this);
+        }
     }
 
     public State getCurrentState() {
@@ -71,7 +88,7 @@ public final class Human implements ElevatorListener {
         }
         this.currentState = State.WAITING_FOR_ELEVATOR;
         if (destinationFloor == startingFloor) { //human is alr at the correct floor? Arrived!
-            this.currentState = State.ARRIVED;
+            this.setArrived();
         }
     }
 
@@ -82,10 +99,13 @@ public final class Human implements ElevatorListener {
         //  elevator and request their actual destination floor. The state has to change to TRAVELING_WITH_ELEVATOR.
         //  If the human is currently traveling with this elevator and the event represents
         //  arrival at the human's destination floor, the human can now exit the elevator.
-        if (getCurrentState() == State.ARRIVED) { //arrived? do nothing
+        if ( //arrived or on an irrelevant floor? do nothing
+                (this.getDestinationFloor() != elevatorPanel.getCurrentFloor() && this.getStartingFloor() != elevatorPanel.getCurrentFloor())
+                || getCurrentState() == State.ARRIVED
+        ) {
             return;
         }
-        if (getCurrentState() == State.WAITING_FOR_ELEVATOR && elevatorPanel.getCurrentFloor() == startingFloor
+        if (getCurrentState() == State.WAITING_FOR_ELEVATOR && elevatorPanel.getCurrentFloor() == startingFloor && currentEnteredElevatorId == null
                 && (getTravelDirection() == elevatorPanel.getTravelDirection() || elevatorPanel.getTopFloor() == elevatorPanel.getCurrentFloor() || elevatorPanel.getCurrentFloor() == elevatorPanel.getMinFloor())
         ) {
             //elevator in our floor and travelling in the same direction? hop in. If they both are at the top or min floor they can join no matter the travel direction, because they have only one option.
@@ -95,7 +115,7 @@ public final class Human implements ElevatorListener {
         }
         //elevator reached our floor and we are travelling with it? hop out
         if (getCurrentState() == State.TRAVELING_WITH_ELEVATOR && this.currentEnteredElevatorId != null && this.currentEnteredElevatorId == elevatorPanel.getId() && destinationFloor == elevatorPanel.getCurrentFloor()) {
-            this.currentState = State.ARRIVED;
+            this.setArrived();
             this.currentEnteredElevatorId = null;
         }
     }

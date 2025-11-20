@@ -1,5 +1,7 @@
 package org.togetherjava.event.elevator.elevators;
 
+import org.togetherjava.event.elevator.humans.ElevatorListener;
+
 /**
  * The system in corridors that allows requesting elevators to the current floor.
  */

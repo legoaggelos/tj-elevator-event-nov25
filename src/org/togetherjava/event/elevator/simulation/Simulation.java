@@ -3,6 +3,7 @@ package org.togetherjava.event.elevator.simulation;
 import org.togetherjava.event.elevator.elevators.Elevator;
 import org.togetherjava.event.elevator.elevators.ElevatorSystem;
 import org.togetherjava.event.elevator.humans.Human;
+import org.togetherjava.event.elevator.humans.HumanArrivedListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,13 +13,14 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
-public final class Simulation {
+public final class Simulation implements HumanArrivedListener {
     private final List<Human> humans;
     private final List<Elevator> elevators;
     private final ElevatorSystem elevatorSystem;
     private final View view;
     private long stepCount;
     private final List<HumanStatistics> humanStatistics;
+    private long travelingHumanCount;
 
     public static Simulation createSingleElevatorSingleHumanSimulation() {
         return new Simulation(List.of(new Elevator(1, 10, 5)),
@@ -71,10 +73,14 @@ public final class Simulation {
 
         elevatorSystem = new ElevatorSystem();
         this.elevators.forEach(elevatorSystem::registerElevator);
-        this.humans.forEach(elevatorSystem::registerElevatorListener);
+        this.humans.forEach(human -> {
+            elevatorSystem.registerElevatorListener(human);
+            human.addListener(this);
+        });
 
         humanStatistics = this.humans.stream().map(HumanStatistics::new).toList();
         view = new View(this);
+        travelingHumanCount = humans.size();
     }
     /*
      * Smart initial direction is enabled by default in the elevator system.
@@ -84,6 +90,20 @@ public final class Simulation {
     public void setSmartInitialDirection(boolean useSmartInitialDirection) {
         this.elevatorSystem.setUseSmartInitialDirection(useSmartInitialDirection);
     }
+
+    public void addHuman(Human human) {
+        if (isDone()) {
+            throw new SimulationFinishedException("Can't add new human after simulation is finished!");
+        }
+        humans.add(human);
+        elevatorSystem.registerElevatorListener(human);
+        human.addListener(this);
+        human.onElevatorSystemReady(elevatorSystem);
+        if (human.getCurrentState() != Human.State.ARRIVED) {
+            travelingHumanCount++;
+        }
+    }
+
     public void startAndExecuteUntilDone(int stepLimit) {
         start();
 
@@ -109,9 +129,7 @@ public final class Simulation {
     }
 
     public boolean isDone() {
-        return humans.stream()
-                .map(Human::getCurrentState)
-                .allMatch(Human.State.ARRIVED::equals);
+        return travelingHumanCount == 0;
     }
 
     public long getStepCount() {
@@ -158,5 +176,12 @@ public final class Simulation {
 
         double medianPercentage = (double) (100 * medianSteps) / stepCount;
         return (double) medianPercentage;
+    }
+
+    @Override
+    public void onHumanArrived(Human human) {
+        if (travelingHumanCount > 0) {
+            travelingHumanCount--; //we trust that the human doesnt notify us twice.
+        }
     }
 }
