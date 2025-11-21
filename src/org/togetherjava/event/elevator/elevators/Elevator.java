@@ -20,7 +20,7 @@ public final class Elevator implements ElevatorPanel {
     private final List<Integer> floorRequests = new ArrayList<>();
 
     public List<Integer> getFloorRequests() {
-        return floorRequests;
+        return Collections.unmodifiableList(floorRequests);
     }
 
     /**
@@ -58,13 +58,17 @@ public final class Elevator implements ElevatorPanel {
         return floorsServed;
     }
 
+    public int getTopFloor() {
+        return minFloor + floorsServed - 1;
+    }
+
     @Override
     public int getCurrentFloor() {
         return currentFloor;
     }
 
     @Override
-    public void requestDestinationFloor(int destinationFloor) {
+    public synchronized void requestDestinationFloor(int destinationFloor) {
         // TODO Implement. This represents a human or the elevator system
         //  itself requesting this elevator to eventually move to the given floor.
         //  The elevator is supposed to memorize the destination in a way that
@@ -76,7 +80,7 @@ public final class Elevator implements ElevatorPanel {
     }
 
     public void incrementFloorByOne() {
-        if (currentFloor+1 > minFloor + floorsServed - 1) {
+        if (currentFloor+1 > this.getTopFloor()) {
             return;
         }
         currentFloor++;
@@ -105,14 +109,16 @@ public final class Elevator implements ElevatorPanel {
 
         //if we the target is up, we go up, if it is down, we go down
         if (currentFloor < floorRequests.getFirst()) { //first come, first served, for now...
-            incrementFloorByOne();
+            this.incrementFloorByOne();
         } else if (currentFloor > floorRequests.getFirst()) {
-            decrementFloorByOne();
+            this.decrementFloorByOne();
         }
 
         //if we have arrived at our floor, or we already are there, we remove the request
         if (currentFloor == floorRequests.getFirst()) {
-            floorRequests.removeFirst();
+            synchronized (this) {
+                floorRequests.removeFirst();
+            }
         }
     }
 

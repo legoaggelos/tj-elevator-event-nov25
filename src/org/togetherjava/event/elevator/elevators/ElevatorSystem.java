@@ -3,7 +3,9 @@ package org.togetherjava.event.elevator.elevators;
 import org.togetherjava.event.elevator.humans.ElevatorListener;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * System controlling all elevators of a building.
@@ -28,7 +30,7 @@ public final class ElevatorSystem implements FloorPanelSystem {
      * Upon calling this, the system is ready to receive elevator requests. Elevators may now start moving.
      */
     public void ready() {
-        elevatorListeners.forEach(listener -> listener.onElevatorSystemReady(this));
+        elevatorListeners.parallelStream().forEach(listener -> listener.onElevatorSystemReady(this));
     }
 
     public static int floorAndElevatorDistance(int floor, Elevator elevator) {
@@ -41,8 +43,19 @@ public final class ElevatorSystem implements FloorPanelSystem {
         if (elevators.size() == 1) {
             return bestElevator;
         }
+        Set<Elevator> candidates = new HashSet<>(); //we find all the closest candidates
+        candidates.add(bestElevator);
         for (var elevator : elevators) {
-            if (floorAndElevatorDistance(atFloor, elevator) > floorAndElevatorDistance(atFloor, bestElevator)) {
+            if (floorAndElevatorDistance(atFloor, elevator) < floorAndElevatorDistance(atFloor, candidates.stream().findAny().get())) {
+                candidates.clear();
+                candidates.add(elevator);
+            } else if (floorAndElevatorDistance(atFloor, elevator) == floorAndElevatorDistance(atFloor, candidates.stream().findAny().get())) {
+                candidates.add(elevator);
+            }
+        }
+        bestElevator = candidates.stream().findAny().get();
+        for (var elevator : candidates) {
+            if (elevator.getFloorRequests().size() < bestElevator.getFloorRequests().size()) { //out of the closest candidates, we chose the one with the least traffic
                 bestElevator = elevator;
             }
         }
@@ -65,7 +78,7 @@ public final class ElevatorSystem implements FloorPanelSystem {
     }
 
     public void moveOneFloor() {
-        elevators.forEach(Elevator::moveOneFloor);
-        elevators.forEach(elevator -> elevatorListeners.forEach(listener -> listener.onElevatorArrivedAtFloor(elevator)));
+        elevators.parallelStream().forEach(Elevator::moveOneFloor);
+        elevators.parallelStream().forEach(elevator -> elevatorListeners.parallelStream().forEach(listener -> listener.onElevatorArrivedAtFloor(elevator)));
     }
 }
