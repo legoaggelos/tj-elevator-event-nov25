@@ -114,9 +114,9 @@ public final class Elevator implements ElevatorPanel {
             state = TravelDirection.DOWN; //if we are at the top, we need to start going down.
         }
         if (state == TravelDirection.UP) {
-            incrementFloorByOne();
+            this.incrementFloorByOne();
         } else {
-            decrementFloorByOne();
+            this.decrementFloorByOne();
         }
     }
 
