@@ -26,7 +26,7 @@ public final class Human implements ElevatorListener {
      * Otherwise, this is {@code null} to indicate that the human is currently on the corridor.
      */
     private Integer currentEnteredElevatorId;
-    private List<HumanArrivedListener> listeners = new ArrayList<>();
+    private final List<HumanArrivedListener> listeners = new ArrayList<>();
 
     /**
      * Creates a new human.
@@ -86,10 +86,12 @@ public final class Human implements ElevatorListener {
         if (getCurrentState() != State.IDLE) { //if the human isnt idle nothing should be done
             return;
         }
-        this.currentState = State.WAITING_FOR_ELEVATOR;
+
         if (destinationFloor == startingFloor) { //human is alr at the correct floor? Arrived!
             this.setArrived();
+            return;
         }
+        this.currentState = State.WAITING_FOR_ELEVATOR;
     }
 
     @Override

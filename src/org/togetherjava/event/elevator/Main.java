@@ -24,10 +24,10 @@ public final class Main {
         // That way, it will generate the same system again, and you can repeat the test.
         //Simulation simulation = Simulation.createRandomSimulation(4637787693156730566L,5, 5_000, 100);
         //Simulation simulation = Simulation.createSimpleSimulation();
-        //Simulation simulation = Simulation.createRandomSimulation(-806872529110342439L, 2, 50000, 1000);
+        Simulation simulation = Simulation.createRandomSimulation(-806872529110342439L, 2, 50000, 1000);
         //Simulation simulation = Simulation.createRandomSimulation(putDesiredSeedHere, 5, 50, 10);
-        //Simulation simulation = Simulation.createRandomSimulation(3, 100, 100_000, 100);
-        Simulation simulation = Simulation.createSingleElevatorSingleHumanSimulation();
+        //Simulation simulation = Simulation.createRandomSimulation(3, 100, 100_000, 1000);
+        //Simulation simulation = Simulation.createSingleElevatorSingleHumanSimulation();
         //Simulation simulation = Simulation.createRandomSimulation(1, 5, 50, 10);
         //Simulation simulation = Simulation.createRandomSimulation(2, 20, 1_000, 50);
         simulation.printSummary();

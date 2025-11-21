@@ -85,14 +85,14 @@ public final class Elevator implements ElevatorPanel {
     }
 
     public void incrementFloorByOne() {
-        if (currentFloor + 1 > minFloor + floorsServed - 1) {
+        if (currentFloor + 1 > getTopFloor()) {
             return;
         }
         currentFloor++;
     }
 
     public void decrementFloorByOne() {
-        if (currentFloor-1 < minFloor) {
+        if (currentFloor - 1 < minFloor) {
             return;
         }
         currentFloor--;
@@ -110,7 +110,7 @@ public final class Elevator implements ElevatorPanel {
         //  It is essential that this method updates the currentFloor field accordingly.
         if (currentFloor == minFloor) {
             state = TravelDirection.UP; //if we are at the bottom, we go up
-        } else if (currentFloor == minFloor + floorsServed - 1) {
+        } else if (currentFloor == getTopFloor()) {
             state = TravelDirection.DOWN; //if we are at the top, we need to start going down.
         }
         if (state == TravelDirection.UP) {

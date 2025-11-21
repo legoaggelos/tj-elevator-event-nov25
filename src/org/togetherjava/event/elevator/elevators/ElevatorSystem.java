@@ -64,7 +64,7 @@ public final class ElevatorSystem implements FloorPanelSystem {
      * Upon calling this, the system is ready to receive elevator requests. Elevators may now start moving.
      */
     public void ready() {
-        elevatorListeners.forEach(listener -> listener.onElevatorSystemReady(this));
+        elevatorListeners.parallelStream().forEach(listener -> listener.onElevatorSystemReady(this));
         for (Elevator elevator : elevators) {
             if (smartInitialDirection) {
                 elevator.setState(findOptimalDirectionForElevator(elevator));

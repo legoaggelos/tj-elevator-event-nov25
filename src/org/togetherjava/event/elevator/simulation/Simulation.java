@@ -174,8 +174,7 @@ public final class Simulation implements HumanArrivedListener {
                 ? (long) sortedSteps.skip(humanStatistics.size() / 2 - 1).limit(2).average().orElseThrow()
                 : sortedSteps.skip(humanStatistics.size() / 2).findFirst().orElseThrow();
 
-        double medianPercentage = (double) (100 * medianSteps) / stepCount;
-        return (double) medianPercentage;
+        return (double) (100 * medianSteps) / stepCount;
     }
 
     @Override
