@@ -5,6 +5,8 @@ import org.togetherjava.event.elevator.elevators.ElevatorPanel;
 import org.togetherjava.event.elevator.elevators.FloorPanelSystem;
 import org.togetherjava.event.elevator.elevators.TravelDirection;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.OptionalInt;
 import java.util.StringJoiner;
 
@@ -24,6 +26,8 @@ public final class Human implements ElevatorListener {
      * Otherwise, this is {@code null} to indicate that the human is currently on the corridor.
      */
     private Integer currentEnteredElevatorId;
+
+    private List<HumanArrivedListener> listeners = new ArrayList<>();
 
     /**
      * Creates a new human.
@@ -45,6 +49,19 @@ public final class Human implements ElevatorListener {
         currentState = State.IDLE;
     }
 
+    public void addListener(HumanArrivedListener listener) {
+        this.listeners.add(listener);
+    }
+
+    private void setArrived() {
+        if (this.getCurrentState() == State.ARRIVED) {
+            return; //dont wanna notify listeners twice
+        }
+        this.currentState = State.ARRIVED;
+        for (var listener : listeners) {
+            listener.onHumanArrived(this);
+        }
+    }
     public State getCurrentState() {
         return currentState;
     }
@@ -67,7 +84,7 @@ public final class Human implements ElevatorListener {
         }
         this.currentState = State.WAITING_FOR_ELEVATOR;
         if (destinationFloor == startingFloor) { //human is alr at the correct floor? Arrived!
-            this.currentState = State.ARRIVED;
+            this.setArrived();
         }
     }
 
@@ -78,17 +95,18 @@ public final class Human implements ElevatorListener {
         //  elevator and request their actual destination floor. The state has to change to TRAVELING_WITH_ELEVATOR.
         //  If the human is currently traveling with this elevator and the event represents
         //  arrival at the human's destination floor, the human can now exit the elevator.
-        if (getCurrentState() == State.ARRIVED) { //arrived? do nothing
+        if (this.getCurrentState() == State.ARRIVED ||
+                (this.getDestinationFloor() != elevatorPanel.getCurrentFloor() && this.getStartingFloor() != elevatorPanel.getCurrentFloor())) { //arrived or irrelevant elevator? do nothing
             return;
         }
-        if (getCurrentState() == State.WAITING_FOR_ELEVATOR && elevatorPanel.getCurrentFloor() == startingFloor) { //elevator in our floor? hop in
+        if (this.getCurrentState() == State.WAITING_FOR_ELEVATOR && elevatorPanel.getCurrentFloor() == startingFloor) { //elevator in our floor? hop in
             this.currentEnteredElevatorId = elevatorPanel.getId();
             this.currentState = State.TRAVELING_WITH_ELEVATOR;
             return;
         }
         //elevator reached our floor and we are travelling with it? hop out
-        if (getCurrentState() == State.TRAVELING_WITH_ELEVATOR && this.currentEnteredElevatorId != null && this.currentEnteredElevatorId == elevatorPanel.getId() && destinationFloor == elevatorPanel.getCurrentFloor()) {
-            this.currentState = State.ARRIVED;
+        if (this.getCurrentState() == State.TRAVELING_WITH_ELEVATOR && this.currentEnteredElevatorId != null && this.currentEnteredElevatorId == elevatorPanel.getId() && destinationFloor == elevatorPanel.getCurrentFloor()) {
+            this.setArrived();
             this.currentEnteredElevatorId = null;
         }
     }
