@@ -83,7 +83,7 @@ public final class Human implements ElevatorListener {
         // TODO Implement. The system is now ready and the human should leave
         //  their initial IDLE state, requesting an elevator by clicking on the buttons of
         //  the floor panel system. The human will now enter the WAITING_FOR_ELEVATOR state.
-        if (getCurrentState() != State.IDLE) { //if the human isnt idle nothing should be done
+        if (this.getCurrentState() != State.IDLE) { //if the human isnt idle nothing should be done
             return;
         }
 
@@ -116,7 +116,7 @@ public final class Human implements ElevatorListener {
             return;
         }
         //elevator reached our floor and we are travelling with it? hop out
-        if (getCurrentState() == State.TRAVELING_WITH_ELEVATOR && this.currentEnteredElevatorId != null && this.currentEnteredElevatorId == elevatorPanel.getId() && destinationFloor == elevatorPanel.getCurrentFloor()) {
+        if (this.getCurrentState() == State.TRAVELING_WITH_ELEVATOR && this.currentEnteredElevatorId != null && this.currentEnteredElevatorId == elevatorPanel.getId() && destinationFloor == elevatorPanel.getCurrentFloor()) {
             this.setArrived();
             this.currentEnteredElevatorId = null;
         }
