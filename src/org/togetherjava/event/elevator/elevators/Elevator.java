@@ -115,9 +115,10 @@ public final class Elevator implements ElevatorPanel {
         }
 
         //if we have arrived at our floor, or we already are there, we remove the request
-        if (currentFloor == floorRequests.getFirst()) {
+
+        if (floorRequests.contains(currentFloor)) {
             synchronized (this) {
-                floorRequests.removeFirst();
+                floorRequests.remove(floorRequests.indexOf(currentFloor));
             }
         }
     }

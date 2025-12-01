@@ -23,29 +23,37 @@ public final class Main {
         // Simulation simulation = Simulation.createSimpleSimulation();
         // Simulation simulation = Simulation.createRandomSimulation(5, 50, 10);
         // Simulation simulation = Simulation.createRandomSimulation(putDesiredSeedHere, 5, 50, 10);
-        Simulation simulation = Simulation.createRandomSimulation(3, 10, 100_000, 200);
+        //Simulation simulation = Simulation.createRandomSimulation(3, 10, 100_000, 200);
         //Simulation simulation = Simulation.createRandomSimulation(2, 20, 1_000, 50);
         //Simulation simulation = Simulation.createRandomSimulation(-806872529110342439L, 200, 50000, 1000);
         //Simulation simulation = Simulation.createRandomSimulation(4637787693156730566L,5, 5_000, 100);
+        //Simulation simulation = Simulation.createRandomSimulation(1, 5, 50, 10);
+        //Simulation simulation = Simulation.createRandomSimulation(2, 20, 1_000, 50);
+        Simulation simulation = Simulation.createRandomSimulation(3, 100, 100_000, 100);
+        //Simulation simulation = Simulation.createRandomSimulation(4637787693156730566L, 20, 5_000, 100);
         simulation.printSummary();
 
         System.out.println("Starting simulation...");
         simulation.start();
         simulation.prettyPrint();
 
+        var before = System.currentTimeMillis();
         while (!simulation.isDone()) {
-            System.out.println("\tSimulation step " + simulation.getStepCount());
+            //System.out.println("\tSimulation step " + simulation.getStepCount());
             simulation.step();
-            //simulation.prettyPrint();
-            if (simulation.getStepCount() == 5000) {
+            if (simulation.getStepCount() == 20000) {
                 System.out.println();
             }
-            if (simulation.getStepCount() >= 100_000) {
+            //simulation.prettyPrint();
+            if (simulation.getStepCount() >= 200_000) {
                 throw new IllegalStateException("Simulation aborted. All humans should have arrived"
                         + " by now, but they did not. There is likely a bug in your code.");
             }
         }
+        var after = System.currentTimeMillis();
+        var difference = (double)(after - before) / 1000;
         System.out.println("Simulation is done.");
+        System.out.println("Took: " + difference + " seconds");
 
         simulation.printResult();
     }
